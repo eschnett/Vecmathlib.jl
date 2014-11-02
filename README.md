@@ -1,4 +1,4 @@
-VecMathLib.jl
+Vecmathlib.jl
 =============
 
 Vectorizable elemental math functions for Julia
