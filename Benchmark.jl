@@ -79,11 +79,11 @@ function main()
     benchmark_type(Float64)
 end
 
-# code_native(kernel_identity, (Int, Int, Array{Float64,1}, Array{Float64,1}))
-# code_native(kernel_add, (Int, Int, Array{Float64,1}, Array{Float64,1}))
-# code_native(kernel_mul, (Int, Int, Array{Float64,1}, Array{Float64,1}))
-# code_native(kernel_exp2, (Int, Int, Array{Float64,1}, Array{Float64,1}))
-# code_native(kernel_vexp2, (Int, Int, Array{Float64,1}, Array{Float64,1}))
+# code_native(kernel_identity, (Array{Float64,1}, Array{Float64,1}))
+# code_native(kernel_add, (Array{Float64,1}, Array{Float64,1}))
+# code_native(kernel_mul, (Array{Float64,1}, Array{Float64,1}))
+# code_native(kernel_exp2, (Array{Float64,1}, Array{Float64,1}))
+# code_native(kernel_vexp2, (Array{Float64,1}, Array{Float64,1}))
 
 main()
 
