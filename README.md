@@ -44,12 +44,20 @@ add       | 0.17         | 0.31
 mul       | 0.17         | 0.31
 exp2      | 6.83         | 7.93
 vexp2     | 1.08         | 3.39
+(yeppp    | ?            | *2.07)
 
 "no-op" performs no operation and measures the overhead of the
 benchmarking overhead. "add" and "mul" perform a floating-point
 addition and multiplication, respectively. "exp2" is the standard
 Julia `exp2` function, "vexp2" is the vectorizable implementation
 provided by this library.
+
+The "yeppp" value is an estimate for the performance of the Yeppp
+library <http://www.yeppp.info/downloads.html> according to its
+documentation, which lists 5.6 cycles per call for this CPU
+architecture. The main difference in implementation seems to be that
+Yeppp aggressively unrolls the SIMD loop, something that Julia/LLVM
+doesn't do here. (Is there an `@unroll` macro for Julia?)
 
 As a sanity check, we can compare these numbers to the theoretical
 peak performance of this CPU. With AVX instructions, it should execute
