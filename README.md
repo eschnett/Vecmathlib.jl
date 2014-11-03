@@ -16,7 +16,7 @@ implementation.
 
 # Benchmark results
 
-*TL;DR:* The exponential function in this library is about twice as
+**TL;DR:** The exponential function in this library is about twice as
 fast as the standard implementation for SIMD-vectorized 64-bit
 floating-point operations.
 
@@ -33,11 +33,11 @@ operations to ensure that these iterations are not optimized away (see
 the source code).
 
 All times are in ns (nanoseconds, 1e-9 seconds, smaller is better),
-amortized per single function call. That is, this benchmark does not
+per single amortized function call. That is, this benchmark does not
 measure how fast a single call is -- it measures how fast it is to
 make many calls in a tight for loop.
 
-Operation | Float32 [us] | Float64 [us]
+Operation | Float32 [ns] | Float64 [ns]
 :---------|:-------------|:------------
 no-op     | 0.15         | 0.27
 add       | 0.17         | 0.31
