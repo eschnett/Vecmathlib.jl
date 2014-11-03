@@ -227,40 +227,29 @@ end
 
 
 
-function selftests()
-    eps32 = eps(Float32)
-    min32 = realmin(Float32)
-    max32 = realmax(Float32)
-    vals32 = Float32[0.0, min32, nextfloat(min32),
-                     0.1*eps32, eps32, 10.0*eps32,
-                     0.1*sqrt(eps32), sqrt(eps32), 10.0*sqrt(eps32),
-                     1.0-eps32, 1.0, 1.0+eps32,
-                     2.0, 10.0, 100.0,
-                     0.1*sqrt(max32), sqrt(max32), 10.0*sqrt(max32),
-                     0.1*max32, prevfloat(max32), max32, Inf, NaN]
-    for uval in vals32
-        for val in (uval, -uval)
-            @test isequal(vexp2(val), exp2(val))
-        end
-    end
-    
-    eps64 = eps(Float64)
-    min64 = realmin(Float64)
-    max64 = realmax(Float64)
-    vals64 = Float64[0.0, min64, nextfloat(min64),
-                     0.1*eps64, eps64, 10.0*eps64,
-                     0.1*sqrt(eps64), sqrt(eps64), 10.0*sqrt(eps64),
-                     1.0-eps64, 1.0, 1.0+eps64,
-                     2.0, 10.0, 100.0,
-                     0.1*sqrt(max64), sqrt(max64), 10.0*sqrt(max64),
-                     0.1*max64, prevfloat(max64), max64, Inf, NaN]
-    for uval in vals64
+function selftest_type(T::Type)
+    eps = Base.eps(T)
+    min = realmin(T)
+    max = realmax(T)
+    vals = T[0.0, min, nextfloat(min),
+             0.1*eps, eps, 10.0*eps,
+             0.1*sqrt(eps), sqrt(eps), 10.0*sqrt(eps),
+             1.0-eps, 1.0, 1.0+eps,
+             2.0, 10.0, 100.0,
+             0.1*sqrt(max), sqrt(max), 10.0*sqrt(max),
+             0.1*max, prevfloat(max), max, Inf, NaN]
+    for uval in vals
         for val in (uval, -uval)
             @test isequal(vexp2(val), exp2(val))
         end
     end
 end
 
-selftests()
+function selftest()
+    selftest_type(Float32)
+    selftest_type(Float64)
+end
+
+selftest()
 
 end
