@@ -53,11 +53,12 @@ Julia `exp2` function, "vexp2" is the vectorizable implementation
 provided by this library.
 
 The "yeppp" value is an estimate for the performance of the Yeppp
-library <http://www.yeppp.info/downloads.html> according to its
-documentation, which lists 5.6 cycles per call for this CPU
-architecture. The main difference in implementation seems to be that
-Yeppp aggressively unrolls the SIMD loop, something that Julia/LLVM
-doesn't do here. (Is there an `@unroll` macro for Julia?)
+library <http://www.yeppp.info/> according to its documentation, which
+lists 5.6 cycles per call for this CPU architecture
+<http://www.yeppp.info/home/yeppp-performance-numbers/>. The main
+difference in implementation seems to be that Yeppp aggressively
+unrolls the SIMD loop, something that Julia/LLVM doesn't do here. (Is
+there an `@unroll` macro for Julia?)
 
 As a sanity check, we can compare these numbers to the theoretical
 peak performance of this CPU. With AVX instructions, it should execute
