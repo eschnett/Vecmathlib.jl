@@ -9,59 +9,53 @@ export vexp, vexp2
 macro vassert(cond)
 end
 
+make_mask{T}(nbits::T, nshift::T) =
+    convert(T, (convert(T,1) << nbits - convert(T,1)) << nshift)
 
 
-# Float32
-bits(::Type{Float32}) = int32(32)
-floatType(::Type{Float32}) = Float32
+
+# Defined in Base:
+# eps, nextfloat, precision, prevfloat, realmax, realmin, typemax, typemin
+# Inf, Nan
+
+typealias FloatTypes Union(Float16, Float32, Float64)
+typealias IntTypes Union(Int16, Int32, Int64)
+
+floatType{T<:FloatTypes}(::Type{T}) = T
+intType(::Type{Float16}) = Int16
 intType(::Type{Float32}) = Int32
-mkFloat(::Type{Float32}, x) = convert(Float32, x)
-mkInt(::Type{Float32}, x) = convert(Int32, x)
-asFloat(::Type{Float32}, x) = reinterpret(Float32, x)
-asInt(::Type{Float32}, x) = reinterpret(Int32, x)
-mantissa_bits(::Type{Float32}) = int32(23)
-signbit_bits(::Type{Float32}) = int32(1)
-exponent_bits(::Type{Float32}) =
-    int32(bits(Float32)) - mantissa_bits(Float32) - signbit_bits(Float32)
-mantissa_mask(::Type{Float32}) = int32(1) << mantissa_bits(Float32) - int32(1)
-exponent_mask(::Type{Float32}) =
-    (int32(1) << exponent_bits(Float32) - int32(1)) << mantissa_bits(Float32)
-signbit_mask(::Type{Float32}) =
-    (int32(1) << signbit_bits(Float32) - int32(1)) <<
-    (mantissa_bits(Float32) + exponent_bits(Float32))
-min_exponent(::Type{Float32}) = int32(-125)
-max_exponent(::Type{Float32}) =
-    int32(1) << exponent_bits(Float32) - exponent_offset(Float32)
-exponent_offset(::Type{Float32}) = int32(2) - min_exponent(Float32)
-
-# Float64
-bits(::Type{Float64}) = int64(64)
-floatType(::Type{Float64}) = Float64
 intType(::Type{Float64}) = Int64
-mkFloat(::Type{Float64}, x) = convert(Float64, x)
-mkInt(::Type{Float64}, x) = convert(Int64, x)
-asFloat(::Type{Float64}, x) = reinterpret(Float64, x)
-asInt(::Type{Float64}, x) = reinterpret(Int64, x)
-mantissa_bits(::Type{Float64}) = int64(52)
-signbit_bits(::Type{Float64}) = int64(1)
-exponent_bits(::Type{Float64}) =
-    int64(bits(Float64)) - mantissa_bits(Float64) - signbit_bits(Float64)
-mantissa_mask(::Type{Float64}) = int64(1) << mantissa_bits(Float64) - int64(1)
-exponent_mask(::Type{Float64}) =
-    (int64(1) << exponent_bits(Float64) - int64(1)) << mantissa_bits(Float64)
-signbit_mask(::Type{Float64}) =
-    (int64(1) << signbit_bits(Float64) - int64(1)) <<
-    (mantissa_bits(Float64) + exponent_bits(Float64))
-min_exponent(::Type{Float64}) = int64(-1021)
-max_exponent(::Type{Float64}) =
-    int64(1) << exponent_bits(Float64) - exponent_offset(Float64)
-exponent_offset(::Type{Float64}) = int64(2) - min_exponent(Float64)
+
+mkFloat{T<:FloatTypes}(::Type{T}, x) = convert(T, x)
+mkInt{T<:FloatTypes}(::Type{T}, x) = convert(intType(T), x)
+asFloat{T<:FloatTypes}(::Type{T}, x) = reinterpret(T, x)
+asInt{T<:FloatTypes}(::Type{T}, x) = reinterpret(intType(T), x)
+
+bits{T<:FloatTypes}(::Type{T}) = mkInt(T, 8*sizeof(T))
+
+mantissa_bits{T<:FloatTypes}(::Type{T}) = mkInt(T, precision(convert(T,0))-1)
+signbit_bits{T<:FloatTypes}(::Type{T}) = mkInt(T, 1)
+exponent_bits{T<:FloatTypes}(::Type{T}) =
+    mkInt(T, bits(T) - mantissa_bits(T) - signbit_bits(T))
+
+mantissa_mask{T<:FloatTypes}(::Type{T}) =
+    make_mask(mantissa_bits(T), mkInt(T,0))
+exponent_mask{T<:FloatTypes}(::Type{T}) =
+    make_mask(exponent_bits(T), mantissa_bits(T))
+signbit_mask{T<:FloatTypes}(::Type{T}) =
+    make_mask(signbit_bits(T), exponent_bits(T) + mantissa_bits(T))
+
+exponent_offset{T<:FloatTypes}(::Type{T}) =
+    mkInt(T, mkInt(T,1) << mkInt(T, exponent_bits(T) - mkInt(T,1)) - mkInt(T,1))
+min_exponent{T<:FloatTypes}(::Type{T}) =
+    mkInt(T, mkInt(T,2) - exponent_offset(T))
+max_exponent{T<:FloatTypes}(::Type{T}) =
+    mkInt(T, mkInt(T,1) << exponent_bits(T) - exponent_offset(T) - mkInt(T,2))
 
 
 
-# TODO: Use BigFloat to calculate these at run time?
-const M_LOG10E = 0.434294481903251827651128918917
-const M_LOG2E = 1.44269504088896340735992468100
+const M_LOG10E = 4.342944819032518276511289189166050822943970058036665661144537831658646492088688e-01
+const M_LOG2E = 1.442695040888963407359924681001892137426645954152985934135449406931109219181187e+00
 
 
 
