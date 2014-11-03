@@ -21,35 +21,37 @@ make_mask{T}(nbits::T, nshift::T) =
 typealias FloatTypes Union(Float16, Float32, Float64)
 typealias IntTypes Union(Int16, Int32, Int64)
 
-floatType{T<:FloatTypes}(::Type{T}) = T
-intType(::Type{Float16}) = Int16
-intType(::Type{Float32}) = Int32
-intType(::Type{Float64}) = Int64
+@inline floatType{T<:FloatTypes}(::Type{T}) = T
+@inline intType(::Type{Float16}) = Int16
+@inline intType(::Type{Float32}) = Int32
+@inline intType(::Type{Float64}) = Int64
 
-mkFloat{T<:FloatTypes}(::Type{T}, x) = convert(T, x)
-mkInt{T<:FloatTypes}(::Type{T}, x) = convert(intType(T), x)
-asFloat{T<:FloatTypes}(::Type{T}, x) = reinterpret(T, x)
-asInt{T<:FloatTypes}(::Type{T}, x) = reinterpret(intType(T), x)
+@inline mkFloat{T<:FloatTypes}(::Type{T}, x) = convert(T, x)
+@inline mkInt{T<:FloatTypes}(::Type{T}, x) = convert(intType(T), x)
+@inline asFloat{T<:FloatTypes}(::Type{T}, x) = reinterpret(T, x)
+@inline asInt{T<:FloatTypes}(::Type{T}, x) = reinterpret(intType(T), x)
 
-bits{T<:FloatTypes}(::Type{T}) = mkInt(T, 8*sizeof(T))
+@inline bits{T<:FloatTypes}(::Type{T}) = mkInt(T, 8*sizeof(T))
 
-mantissa_bits{T<:FloatTypes}(::Type{T}) = mkInt(T, precision(convert(T,0))-1)
-signbit_bits{T<:FloatTypes}(::Type{T}) = mkInt(T, 1)
-exponent_bits{T<:FloatTypes}(::Type{T}) =
+@inline mantissa_bits{T<:FloatTypes}(::Type{T}) =
+    mkInt(T, precision(convert(T,0))-1)
+@inline signbit_bits{T<:FloatTypes}(::Type{T}) =
+    mkInt(T, 1)
+@inline exponent_bits{T<:FloatTypes}(::Type{T}) =
     mkInt(T, bits(T) - mantissa_bits(T) - signbit_bits(T))
 
-mantissa_mask{T<:FloatTypes}(::Type{T}) =
+@inline mantissa_mask{T<:FloatTypes}(::Type{T}) =
     make_mask(mantissa_bits(T), mkInt(T,0))
-exponent_mask{T<:FloatTypes}(::Type{T}) =
+@inline exponent_mask{T<:FloatTypes}(::Type{T}) =
     make_mask(exponent_bits(T), mantissa_bits(T))
-signbit_mask{T<:FloatTypes}(::Type{T}) =
+@inline signbit_mask{T<:FloatTypes}(::Type{T}) =
     make_mask(signbit_bits(T), exponent_bits(T) + mantissa_bits(T))
 
-exponent_offset{T<:FloatTypes}(::Type{T}) =
+@inline exponent_offset{T<:FloatTypes}(::Type{T}) =
     mkInt(T, mkInt(T,1) << mkInt(T, exponent_bits(T) - mkInt(T,1)) - mkInt(T,1))
-min_exponent{T<:FloatTypes}(::Type{T}) =
+@inline min_exponent{T<:FloatTypes}(::Type{T}) =
     mkInt(T, mkInt(T,2) - exponent_offset(T))
-max_exponent{T<:FloatTypes}(::Type{T}) =
+@inline max_exponent{T<:FloatTypes}(::Type{T}) =
     mkInt(T, mkInt(T,1) << exponent_bits(T) - exponent_offset(T) - mkInt(T,2))
 
 
