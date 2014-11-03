@@ -231,24 +231,42 @@ end
     return vexp2(mkFloat(T,M_LOG10E)*x)
 end
 
-vals64 = Float64[0.0, realmin(Float64),
-                 1.0-eps(Float64), 1.0, 1.0+eps(Float64),
-                 2.0, 10.0, 100.0, sqrt(realmax(Float64)),
-                 realmax(Float64), Inf, NaN]
-for uval in vals64
-    for val in (uval, -uval)
-        @test isequal(vexp2(val), exp2(val))
+
+
+function selftests()
+    eps32 = eps(Float32)
+    min32 = realmin(Float32)
+    max32 = realmax(Float32)
+    vals32 = Float32[0.0, min32, nextfloat(min32),
+                     0.1*eps32, eps32, 10.0*eps32,
+                     0.1*sqrt(eps32), sqrt(eps32), 10.0*sqrt(eps32),
+                     1.0-eps32, 1.0, 1.0+eps32,
+                     2.0, 10.0, 100.0,
+                     0.1*sqrt(max32), sqrt(max32), 10.0*sqrt(max32),
+                     0.1*max32, prevfloat(max32), max32, Inf, NaN]
+    for uval in vals32
+        for val in (uval, -uval)
+            @test isequal(vexp2(val), exp2(val))
+        end
+    end
+    
+    eps64 = eps(Float64)
+    min64 = realmin(Float64)
+    max64 = realmax(Float64)
+    vals64 = Float64[0.0, min64, nextfloat(min64),
+                     0.1*eps64, eps64, 10.0*eps64,
+                     0.1*sqrt(eps64), sqrt(eps64), 10.0*sqrt(eps64),
+                     1.0-eps64, 1.0, 1.0+eps64,
+                     2.0, 10.0, 100.0,
+                     0.1*sqrt(max64), sqrt(max64), 10.0*sqrt(max64),
+                     0.1*max64, prevfloat(max64), max64, Inf, NaN]
+    for uval in vals64
+        for val in (uval, -uval)
+            @test isequal(vexp2(val), exp2(val))
+        end
     end
 end
 
-vals32 = Float32[0.0, realmin(Float32),
-                 1.0-eps(Float32), 1.0, 1.0+eps(Float32),
-                 2.0, 10.0, 100.0, sqrt(realmax(Float32)),
-                 realmax(Float32), Inf, NaN]
-for uval in vals32
-    for val in (uval, -uval)
-        @test isequal(vexp2(val), exp2(val))
-    end
-end
+selftests()
 
 end

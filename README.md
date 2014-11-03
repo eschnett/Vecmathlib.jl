@@ -17,7 +17,7 @@ implementation.
 # Benchmark results
 
 **TL;DR:** The exponential function in this library is about twice as
-fast as the standard implementation for SIMD-vectorized 64-bit
+fast as Julia's standard implementation for SIMD-vectorized 64-bit
 floating-point operations.
 
 Below are benchmark results from a MacBook Pro 2.7 GHz Intel Core i7
