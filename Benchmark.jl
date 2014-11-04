@@ -1,6 +1,7 @@
 module Benchmark
 
 using Exp
+using Base.Cartesian
 
 add1(x) = x + convert(typeof(x), 0.1234)
 mul1(x) = x * convert(typeof(x), 0.1234)
@@ -23,6 +24,18 @@ function kernel_mul{T}(x::Array{T,1}, y::Array{T,1})
     @simd for i in 1:length(y)
         @inbounds y[i] += mul1(x[i])
     end
+    # @simd for i in 1:4:length(y)
+    #     @inbounds @nexprs 4 d->(y[i+d-1] += mul1(x[i+d-1]))
+    # end
+    # @simd for i in 0:length(y)÷4-1
+    #     @inbounds @nexprs 4 d->(y[4*i+d] += mul1(x[4*i+d]))
+    # end
+    # @simd for i in 1:4:length(y)
+    #     @inbounds y[i+0] += mul1(x[i+0])
+    #     @inbounds y[i+1] += mul1(x[i+1])
+    #     @inbounds y[i+2] += mul1(x[i+2])
+    #     @inbounds y[i+3] += mul1(x[i+3])
+    # end
 end
 
 function kernel_exp2{T}(x::Array{T,1}, y::Array{T,1})
