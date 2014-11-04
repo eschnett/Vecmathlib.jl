@@ -75,8 +75,8 @@ function benchmark{T}(func, name, ni::Int, nj::Int, x0::T, dx::T)
 end
 
 function benchmark_type(T::Type)
-    ni = 1000
-    nj = 1000*1000
+    ni = 10^3
+    nj = 10^6
     x0 = convert(T, 1.0)
     dx = convert(T, sqrt(eps(T)))
     benchmark(kernel_identity, "identity", ni,nj,x0,dx)
