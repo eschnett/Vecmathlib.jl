@@ -1,163 +1,9 @@
 module Exp
 
 using Base.Test
+using Bitmanip, Defs, FloatProps, Rounding
 
-export vexp, vexp2
-
-
-
-macro vassert(cond)
-end
-
-make_mask{T}(nbits::T, nshift::T) =
-    convert(T, (convert(T,1) << nbits - convert(T,1)) << nshift)
-
-
-
-# Defined in Base:
-# eps, nextfloat, precision, prevfloat, realmax, realmin, typemax, typemin
-# Inf, Nan
-
-typealias FloatTypes Union(Float16, Float32, Float64)
-typealias IntTypes Union(Int16, Int32, Int64)
-
-@inline floatType{T<:FloatTypes}(::Type{T}) = T
-@inline intType(::Type{Float16}) = Int16
-@inline intType(::Type{Float32}) = Int32
-@inline intType(::Type{Float64}) = Int64
-
-@inline mkFloat{T<:FloatTypes}(::Type{T}, x) = convert(T, x)
-@inline mkInt{T<:FloatTypes}(::Type{T}, x) = convert(intType(T), x)
-@inline asFloat{T<:FloatTypes}(::Type{T}, x) = reinterpret(T, x)
-@inline asInt{T<:FloatTypes}(::Type{T}, x) = reinterpret(intType(T), x)
-
-@inline bits{T<:FloatTypes}(::Type{T}) = mkInt(T, 8*sizeof(T))
-
-@inline mantissa_bits{T<:FloatTypes}(::Type{T}) =
-    mkInt(T, precision(convert(T,0))-1)
-@inline signbit_bits{T<:FloatTypes}(::Type{T}) =
-    mkInt(T, 1)
-@inline exponent_bits{T<:FloatTypes}(::Type{T}) =
-    mkInt(T, bits(T) - mantissa_bits(T) - signbit_bits(T))
-
-@inline mantissa_mask{T<:FloatTypes}(::Type{T}) =
-    make_mask(mantissa_bits(T), mkInt(T,0))
-@inline exponent_mask{T<:FloatTypes}(::Type{T}) =
-    make_mask(exponent_bits(T), mantissa_bits(T))
-@inline signbit_mask{T<:FloatTypes}(::Type{T}) =
-    make_mask(signbit_bits(T), exponent_bits(T) + mantissa_bits(T))
-
-@inline exponent_offset{T<:FloatTypes}(::Type{T}) =
-    mkInt(T, mkInt(T,1) << mkInt(T, exponent_bits(T) - mkInt(T,1)) - mkInt(T,1))
-@inline min_exponent{T<:FloatTypes}(::Type{T}) =
-    mkInt(T, mkInt(T,2) - exponent_offset(T))
-@inline max_exponent{T<:FloatTypes}(::Type{T}) =
-    mkInt(T, mkInt(T,1) << exponent_bits(T) - exponent_offset(T) - mkInt(T,2))
-
-
-
-const M_LOG10E = 4.342944819032518276511289189166050822943970058036665661144537831658646492088688e-01
-const M_LOG2E = 1.442695040888963407359924681001892137426645954152985934135449406931109219181187e+00
-
-
-
-@inline function vifthen{T}(cond::Bool, x::T, y::T)
-    return cond ? x : y
-end
-
-
-
-@inline function visfinite{T}(x::T)
-    e = asInt(T,x) & exponent_mask(T)
-    return e != exponent_mask(T)
-end
-
-@inline function visinf{T}(x::T)
-    em = asInt(T,x) & (exponent_mask(T) | mantissa_mask(T))
-    return em == exponent_mask(T)
-end
-
-@inline function visnan{T}(x::T)
-    e = asInt(T,x) & exponent_mask(T)
-    m = asInt(T,x) & mantissa_mask(T)
-    return e == exponent_mask(T) && m != mkInt(T,0)
-end
-
-@inline function visnormal{T}(x::T)
-    e = asInt(T,x) & exponent_mask(T)
-    return e != exponent_mask(T) && e != mkInt(T,0)
-end
-
-@inline function vissubnormal{T}(x::T)
-    e = asInt(T,x) & exponent_mask(T)
-    m = asInt(T,x) & mantissa_mask(T)
-    return e == mkInt(T,0) && m != mkInt(T,0)
-end
-
-@inline function vsignbit{T}(x::T)
-    s = asInt(T,x) & signbit_mask(T)
-    return s != mkInt(T,0)
-end
-
-
-
-@inline function vfabs{T}(x::T)
-    return asFloat(T, asInt(T,x) & ~signbit_mask(T))
-end
-@inline function vflipsign{T}(x::T, y::T)
-    ix = asInt(T,x)
-    iysgn = asInt(T,y) & signbit_mask(T)
-    return asFloat(T, ix $ iysgn)
-end
-@inline function vcopysign{T}(x::T, y::T)
-    ixmag = asInt(T,x) & ~signbit_mask(T)
-    iysgn = asInt(T,y) & signbit_mask(T)
-    return asFloat(T, ixmag | iysgn)
-end
-@inline function vneg{T}(x::T)
-    return asFloat(T, asInt(T,x) $ signbit_mask(T))
-end
-
-
-
-@inline function vldexp{T}(x::T, i::Integer)
-    i::intType(T)
-    # Use direct integer manipulation
-    # Extract integer as lowest mantissa bits (highest bits still
-    # contain offset, exponent, and sign)
-    ix = asInt(T,x)
-    # Construct scale factor by setting exponent (this shifts out the
-    # highest bits)
-    scale = asFloat(T, ix << mantissa_bits(T))
-    return x * scale
-end
-
-@inline function vldexp{T}(x::T, y::T)
-    # Use direct integer manipulation
-    # Add a large number to shift the integer bits into the rightmost
-    # bits of the mantissa. Also already add the exponent offset that
-    # we need below.
-    offset = mkFloat(T, mkInt(T,1) << mantissa_bits(T) + exponent_offset(T))
-    y = y + offset
-    # Extract integer as lowest mantissa bits (highest bits still
-    # contain offset, exponent, and sign)
-    iy = asInt(T,y)
-    # Construct scale factor by setting exponent. This shifts out the
-    # highest bits, and shifts the lowest mantissa bits into the
-    # exponent. We already added the exponent offset above.
-    scale = asFloat(T, iy << mantissa_bits(T))
-    r = x * scale
-    return r
-end
-
-
-
-@inline function vround{T}(x::T)
-    # Round by adding, then subtracting again a large number
-    offset = mkFloat(T, mkInt(T,1) << mantissa_bits(T))
-    tmp = x + offset
-    return tmp - offset
-end
+export vexp, vexp10, vexp2
 
 
 
@@ -215,12 +61,14 @@ end
     return r
 end
 
+const M_LOG2E = 1.442695040888963407359924681001892137426645954152985934135449406931109219181187e+00
 @inline function vexp{T}(x::T)
     # TODO: Re-calculate the coefficients for this function to
     # increase accuracy and avoid the multiplication
     return vexp2(mkFloat(T,M_LOG2E)*x)
 end
 
+const M_LOG10E = 4.342944819032518276511289189166050822943970058036665661144537831658646492088688e-01
 @inline function vexp10{T}(x::T)
     # TODO: Re-calculate the coefficients for this function to
     # increase accuracy and avoid the multiplication
