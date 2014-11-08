@@ -4,7 +4,7 @@ using FloatProps
 
 export visfinite, visinf, visnan, visnormal, vissubnormal, vsignbit
 export vfabs, vflipsign, vcopysign, vneg
-export vldexp
+export vilogb, vldexp
 
 
 
@@ -56,6 +56,11 @@ end
 
 
 
+@inline function vilogb{T}(x::T)
+    e = asInt(T,x) & exponent_mask(T) >> mantissa_bits(T) - exponent_offset(T)
+    return e
+end
+
 @inline function vldexp{T}(x::T, i::Integer)
     i::intType(T)
     # Use direct integer manipulation
@@ -67,7 +72,6 @@ end
     scale = asFloat(T, ix << mantissa_bits(T))
     return x * scale
 end
-
 @inline function vldexp{T}(x::T, y::T)
     # Use direct integer manipulation
     # Add a large number to shift the integer bits into the rightmost
