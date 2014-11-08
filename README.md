@@ -9,8 +9,8 @@ vectorizable math functions such as sqrt, sin, or atan.
 # Current State
 
 This repository contains currently only a proof-of-concept
-implementation, with code for the `exp` function and a benchmarking
-harness. Most ideas are taken from
+implementation, with code for the `exp` and `log` functions and a
+benchmarking harness. Most ideas are taken from
 <https://bitbucket.org/eschnett/vecmathlib>, which is a C++
 implementation.
 
