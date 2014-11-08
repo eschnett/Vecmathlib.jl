@@ -1,7 +1,7 @@
 module Benchmark
 
-using Exp
 using Base.Cartesian
+using Exp, Log
 
 add1(x) = x + convert(typeof(x), 0.1234)
 mul1(x) = x * convert(typeof(x), 0.1234)
@@ -50,6 +50,18 @@ function kernel_vexp2{T}(x::Array{T,1}, y::Array{T,1})
     end
 end
 
+function kernel_log2{T}(x::Array{T,1}, y::Array{T,1})
+    @simd for i in 1:length(y)
+        @inbounds y[i] += log2(x[i])
+    end
+end
+
+function kernel_vlog2{T}(x::Array{T,1}, y::Array{T,1})
+    @simd for i in 1:length(y)
+        @inbounds y[i] += vlog2(x[i])
+    end
+end
+
 
 
 function run_benchmark{T}(func, nj::Int, x::Array{T,1}, y::Array{T,1})
@@ -84,6 +96,8 @@ function benchmark_type(T::Type)
     benchmark(kernel_mul, "mul", ni,nj,x0,dx)
     benchmark(kernel_exp2, "exp2", ni,nj,x0,dx)
     benchmark(kernel_vexp2, "vexp2", ni,nj,x0,dx)
+    benchmark(kernel_log2, "log2", ni,nj,x0,dx)
+    benchmark(kernel_vlog2, "vlog2", ni,nj,x0,dx)
 end
 
 
