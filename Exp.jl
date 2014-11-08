@@ -78,10 +78,12 @@ end
 
 
 function selftest_type(T::Type)
-    eps = Base.eps(T)
+    zero = convert(T,0)
     min = realmin(T)
+    eps = Base.eps(T)
     max = realmax(T)
-    vals = T[0.0, min, nextfloat(min),
+    vals = T[zero, nextfloat(zero),
+             prevfloat(min), min, nextfloat(min),
              0.1*eps, eps, 10.0*eps,
              0.1*sqrt(eps), sqrt(eps), 10.0*sqrt(eps),
              1.0-eps, 1.0, 1.0+eps,
