@@ -37,18 +37,16 @@ per single amortized function call. That is, this benchmark does not
 measure how fast a single call is -- it measures how fast it is to
 make many calls in a tight for loop.
 
-Operation | Float32 [ns] | Float64 [ns]
-:---------|:-------------|:------------
-no-op     | 0.15         | 0.27
-add       | 0.17         | 0.31
-mul       | 0.17         | 0.31
-----------|--------------|-------------
-exp2      | 6.83         | 7.93
-vexp2     | 1.08         | 3.39
-(yeppp    | ?            | *2.07)
-----------|--------------|-------------
-log2      | 12.37        | 16.29
-vlog2     | 6.42         | 10.90
+Operation   | Float32 [ns] | Float64 [ns]
+:-----------|:-------------|:------------
+no-op       | 0.15         | 0.27
+add         | 0.17         | 0.31
+mul         | 0.17         | 0.31
+exp2        | 6.83         | 7.93
+vexp2       | 1.08         | 3.39
+(yeppp exp2 | ?            | *2.07)
+log2        | 12.37        | 16.29
+vlog2       | 6.42         | 10.90
 
 "no-op" performs no operation and measures the overhead of the
 benchmarking overhead. "add" and "mul" perform a floating-point
