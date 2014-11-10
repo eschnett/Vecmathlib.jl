@@ -73,3 +73,11 @@ performance, likely because the benchmark payload can be executed in
 parallel (superscalar) with the benchmarking harness. That is an
 unavoidable measurement error, unless we were to add significantly
 more complexity.
+
+# Plans
+
+Things that could/should be done:
+
+- Calculate coefficients with Julia
+- Offer (compile-time) options to choose accuracy, inf/nan/subnormal
+  handling, etc.
